@@ -1,0 +1,4 @@
+ALTER TABLE driver
+DROP
+COLUMN email;
+
