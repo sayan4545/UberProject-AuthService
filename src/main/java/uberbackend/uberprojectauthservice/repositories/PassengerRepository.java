@@ -1,4 +1,9 @@
 package uberbackend.uberprojectauthservice.repositories;
 
-public interface PassengerRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import uberbackend.uberprojectauthservice.models.Passenger;
+@Repository
+public interface PassengerRepository extends JpaRepository<Passenger,Long> {
+
 }
