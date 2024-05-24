@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -57,12 +56,13 @@ public class JwtService implements CommandLineRunner {
     }
     private Date extractExpiration(String token){
         return extractClaim(token,Claims::getExpiration);
-
     }
+
     public <T> T extractClaim(String token , Function<Claims,T> resolverFunction){
         final Claims claims = extractAllPayloads(token);
         return resolverFunction.apply(claims);
     }
+
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
 
@@ -73,11 +73,15 @@ public class JwtService implements CommandLineRunner {
     private String extractEmail(String token){
         return extractClaim(token,Claims::getSubject);
     }
+    private String extractPhoneNumber(String token){
+        Claims claims = extractAllPayloads(token);
+        String number = claims.get("phoneNumber",String.class);
+        return number;
+    }
     private Boolean validateToken(String token,String email){
         String emailFetchedFromToken = extractEmail(token);
         return (emailFetchedFromToken.equals(email)&& !isTokenExpired(token));
     }
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -85,7 +89,9 @@ public class JwtService implements CommandLineRunner {
         mp.put("username","sayan");
         mp.put("email","sayan@gmail.com");
         mp.put("password","1234");
+        mp.put("phoneNumber","9748346904");
         String result = createToken(mp,"SYC");
         System.out.println("created token is : "+ result);
+        System.out.println("Phone number is : "+ extractPhoneNumber(result));
     }
 }
