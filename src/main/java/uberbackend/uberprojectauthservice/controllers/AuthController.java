@@ -12,6 +12,10 @@ import uberbackend.uberprojectauthservice.dtos.AuthRequestDto;
 import uberbackend.uberprojectauthservice.dtos.PassengerDto;
 import uberbackend.uberprojectauthservice.dtos.PassengerSignupRequestDto;
 import uberbackend.uberprojectauthservice.services.AuthService;
+import uberbackend.uberprojectauthservice.services.JwtService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -19,9 +23,11 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private AuthService authService;
-    public AuthController(AuthService authService, AuthenticationManager authenticationManager) {
+    private JwtService jwtService;
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
     @PostMapping("/signUp/passenger")
 
@@ -35,7 +41,10 @@ public class AuthController {
         System.out.println("Request recieved" + authRequestDto.getEmail()+" "+ authRequestDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), authRequestDto.getPassword()));
         if(authentication.isAuthenticated()){
-            return new ResponseEntity<>("Authentication Successful", HttpStatus.OK);
+            Map<String,Object> payLoad = new HashMap<>();
+            payLoad.put("email", authRequestDto.getEmail());
+            String jwtToken = jwtService.createToken(authRequestDto.getEmail());
+            return new ResponseEntity<>(jwtToken, HttpStatus.OK);
         }
         return new ResponseEntity<>("Auth failed", HttpStatus.OK);
     }
