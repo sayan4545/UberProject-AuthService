@@ -1,5 +1,6 @@
 package uberbackend.uberprojectauthservice.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,12 +16,12 @@ import java.util.Optional;
  */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+    @Autowired
+    private  PassengerRepository passengerRepository;
 
-    private final PassengerRepository passengerRepository;
-
-    public UserDetailsServiceImpl(PassengerRepository passengerRepository) {
-        this.passengerRepository = passengerRepository;
-    }
+//    public UserDetailsServiceImpl(PassengerRepository passengerRepository) {
+//        this.passengerRepository = passengerRepository;
+//    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -30,6 +31,5 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }else{
             throw new UsernameNotFoundException("Unable to find the user by the given username");
         }
-
     }
 }
