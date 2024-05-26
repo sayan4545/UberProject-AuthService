@@ -1,9 +1,9 @@
 package uberbackend.uberprojectauthservice.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,13 +13,15 @@ import uberbackend.uberprojectauthservice.dtos.PassengerDto;
 import uberbackend.uberprojectauthservice.dtos.PassengerSignupRequestDto;
 import uberbackend.uberprojectauthservice.services.AuthService;
 import uberbackend.uberprojectauthservice.services.JwtService;
-
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
+    @Value("${cookie.expiry}")
+    private int cookieExpiry;
 
     private final AuthenticationManager authenticationManager;
     private AuthService authService;
@@ -37,13 +39,23 @@ public class AuthController {
     }
     @PostMapping("/signIn")
 
-    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto){
+    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletResponse response){
         System.out.println("Request recieved" + authRequestDto.getEmail()+" "+ authRequestDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), authRequestDto.getPassword()));
         if(authentication.isAuthenticated()){
-            Map<String,Object> payLoad = new HashMap<>();
-            payLoad.put("email", authRequestDto.getEmail());
+            //Map<String,Object> payLoad = new HashMap<>();
+            //payLoad.put("email", authRequestDto.getEmail());
+
+           // response.setHeader(HttpHeaders.SET_COOKIE,"12345");
+
             String jwtToken = jwtService.createToken(authRequestDto.getEmail());
+            ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(cookieExpiry)
+                    .build();
+            response.setHeader(HttpHeaders.SET_COOKIE,cookie.toString());
             return new ResponseEntity<>(jwtToken, HttpStatus.OK);
         }
         return new ResponseEntity<>("Auth failed", HttpStatus.OK);
