@@ -94,7 +94,7 @@ public class JwtService implements CommandLineRunner {
         mp.put("password","1234");
         mp.put("phoneNumber","9748346904");
         String result = createToken(mp,"SYC");
-        System.out.println("created token is : "+ result);
-        System.out.println("Phone number is : "+ extractPhoneNumber(result));
+//        System.out.println("created token is : "+ result);
+//        System.out.println("Phone number is : "+ extractPhoneNumber(result));
     }
 }

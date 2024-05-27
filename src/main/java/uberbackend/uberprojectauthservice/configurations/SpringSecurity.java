@@ -1,6 +1,7 @@
 package uberbackend.uberprojectauthservice.configurations;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,21 +15,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import uberbackend.uberprojectauthservice.filters.JwtAuthFilter;
 import uberbackend.uberprojectauthservice.services.UserDetailsServiceImpl;
 
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurity implements WebMvcConfigurer {
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                         .cors(cors->cors.disable()).
-                authorizeHttpRequests(auth->auth.requestMatchers("/api/v1/auth/signUp/*","/api/v1/auth/signIn")
-                .permitAll())
+                        authorizeHttpRequests(auth->auth.requestMatchers("/api/v1/auth/signUp/*","/api/v1/auth/signIn").permitAll()
+                        ).authorizeHttpRequests(auth->auth.requestMatchers("/api/v1/auth/validate").authenticated())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+
     }
 
     @Bean
@@ -61,6 +69,9 @@ public class SpringSecurity implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOriginPatterns("*").allowedMethods("*");
+        registry.addMapping("/**")
+                .allowCredentials(true)
+                .allowedOriginPatterns("*")
+                .allowedMethods("*");
     }
 }

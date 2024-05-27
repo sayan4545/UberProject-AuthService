@@ -1,6 +1,8 @@
 package uberbackend.uberprojectauthservice.controllers;
 
 import com.sun.net.httpserver.Authenticator;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
@@ -41,8 +43,8 @@ public class AuthController {
 
     @PostMapping("/signIn")
 
-    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletResponse response){
-        System.out.println("Request recieved" + authRequestDto.getEmail()+" "+ authRequestDto.getPassword());
+    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletRequest request, HttpServletResponse response){
+        //System.out.println("Request recieved" + authRequestDto.getEmail()+" "+ authRequestDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), authRequestDto.getPassword()));
         if(authentication.isAuthenticated()){
             //Map<String,Object> payLoad = new HashMap<>();
@@ -61,5 +63,12 @@ public class AuthController {
             return new ResponseEntity<>(AuthResponseDto.builder().success(true).build(), HttpStatus.OK);
         }
         return new ResponseEntity<>("Auth failed", HttpStatus.OK);
+    }
+    @GetMapping("/validate")
+    public ResponseEntity<?> validate(HttpServletRequest request){
+        for(Cookie cookie : request.getCookies()){
+            System.out.println(cookie.getName()+" "+cookie.getValue());
+        }
+        return new ResponseEntity<>("Success", HttpStatus.OK);
     }
 }
