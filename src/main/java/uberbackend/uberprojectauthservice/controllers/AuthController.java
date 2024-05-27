@@ -1,5 +1,6 @@
 package uberbackend.uberprojectauthservice.controllers;
 
+import com.sun.net.httpserver.Authenticator;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import uberbackend.uberprojectauthservice.dtos.AuthRequestDto;
+import uberbackend.uberprojectauthservice.dtos.AuthResponseDto;
 import uberbackend.uberprojectauthservice.dtos.PassengerDto;
 import uberbackend.uberprojectauthservice.dtos.PassengerSignupRequestDto;
 import uberbackend.uberprojectauthservice.services.AuthService;
@@ -22,7 +24,6 @@ public class AuthController {
 
     @Value("${cookie.expiry}")
     private int cookieExpiry;
-
     private final AuthenticationManager authenticationManager;
     private AuthService authService;
     private JwtService jwtService;
@@ -31,12 +32,13 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
     }
-    @PostMapping("/signUp/passenger")
 
+    @PostMapping("/signUp/passenger")
     public ResponseEntity<PassengerDto> signUp(@RequestBody PassengerSignupRequestDto passengerSignupRequestDto){
         PassengerDto response =authService.signUpPassenger(passengerSignupRequestDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
     @PostMapping("/signIn")
 
     public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletResponse response){
@@ -56,7 +58,7 @@ public class AuthController {
                     .maxAge(cookieExpiry)
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE,cookie.toString());
-            return new ResponseEntity<>(jwtToken, HttpStatus.OK);
+            return new ResponseEntity<>(AuthResponseDto.builder().success(true).build(), HttpStatus.OK);
         }
         return new ResponseEntity<>("Auth failed", HttpStatus.OK);
     }

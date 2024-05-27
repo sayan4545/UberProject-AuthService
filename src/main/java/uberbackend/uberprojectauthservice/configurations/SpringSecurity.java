@@ -14,15 +14,19 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uberbackend.uberprojectauthservice.services.UserDetailsServiceImpl;
 
 
 @Configuration
 @EnableWebSecurity
-public class SpringSecurity {
+public class SpringSecurity implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(auth->auth.requestMatchers("/api/v1/auth/signUp/*","/api/v1/auth/signIn")
+        return http.csrf(AbstractHttpConfigurer::disable)
+                        .cors(cors->cors.disable()).
+                authorizeHttpRequests(auth->auth.requestMatchers("/api/v1/auth/signUp/*","/api/v1/auth/signIn")
                 .permitAll())
                 .build();
     }
@@ -53,5 +57,10 @@ public class SpringSecurity {
     @Bean
     public PasswordEncoder passwordEncoder2() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**").allowedOriginPatterns("*").allowedMethods("*");
     }
 }
